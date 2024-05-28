@@ -1,10 +1,13 @@
 # Loki 快速入门与实践
 
-You can use this `docker-compose` setup to run Docker for development or in production.
+本示例共有两个目录：
+
+- fs-store：基于文件系统的存储后端示例；
+- s3-store：基于s3兼容的存储服务MinIO的存储后端；
 
 ## Features
 
-- [Minio](https://min.io/) for S3-compatible storage for chunks & indexes
+- [Minio](https://min.io/) for S3-compatible storage for chunks & indexes，仅s3-store示例会用到
 - Promtail for logs
   - 三个可选的日志生成器
     - loggen-json：JSON格式的日志
@@ -15,9 +18,9 @@ You can use this `docker-compose` setup to run Docker for development or in prod
 
 Simply run `docker-compose up` and all the components will start.
 
-All data will be stored in the `.data` directory.
+所有数据会存储在.data目录中；
 
-Grafana runs on port `3000`, and there are Loki & Prometheus datasources enabled by default.
+Grafana runs on port `3000`, and there are Loki datasources enabled by default.
 
 ## Endpoints
 
