@@ -4,6 +4,7 @@ networks:
   loki:
 
 volumes:
+  loki:
   grafana:
 
 services:
@@ -11,7 +12,7 @@ services:
   # Loki would not have permissions to create the directories.
   # Therefore the init container changes permissions of the mounted directory.
   init:
-    image: &lokiImage grafana/loki:2.9.8
+    image: &lokiImage grafana/loki:3.0.0
     user: root
     entrypoint:
       - "chown"
@@ -105,7 +106,7 @@ services:
       - loki
 
   promtail:
-    image: grafana/promtail:2.9.8
+    image: grafana/promtail:3.0.0
     volumes:
       - ./promtail-local-config.yaml:/etc/promtail/config.yaml:ro
       - /var/run/docker.sock:/var/run/docker.sock
