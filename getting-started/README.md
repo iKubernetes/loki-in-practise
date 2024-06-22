@@ -2,13 +2,14 @@
 
 本示例共有两个目录：
 
-- fs-store：基于文件系统的存储后端示例；
+- fs-store：基于文件系统的存储后端示例，日志采集代理为Promtail；
+- fs-store-alloy：基于文件系统的存储后端示例，日志采集代理为Alloy；
 - s3-store：基于s3兼容的存储服务MinIO的存储后端；
 
 ## Features
 
 - [Minio](https://min.io/) for S3-compatible storage for chunks & indexes，仅s3-store示例会用到
-- Promtail for logs
+- Promtail/Alloy for logs
   - 三个可选的日志生成器
     - loggen-json：JSON格式的日志
     - loggen-apache-common：文本日志，apache common格式
@@ -97,6 +98,12 @@ regexp解析器示例：apache combined日志解析
 ```
 
 
+
+regexp解析器示例：apache combined或common日志解析
+
+```
+{container="getting-started_loggen-apache_1"} | regexp "^(?P<_>\\S+) (?P<_>\\S+) (?P<user>\\S+) \\[(?P<_>[^\\]]+)\\] \"(?P<method>\\S+) (?P<request>\\S+) (?P<_>\\S+)\" (?P<status>\\d+) (?P<_>.*)"
+```
 
 
 
