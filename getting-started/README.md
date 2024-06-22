@@ -1,10 +1,11 @@
 # Loki 快速入门与实践
 
-本示例共有两个目录：
+本示例共有四个目录：
 
 - fs-store：基于文件系统的存储后端示例，日志采集代理为Promtail；
 - fs-store-alloy：基于文件系统的存储后端示例，日志采集代理为Alloy；
-- s3-store：基于s3兼容的存储服务MinIO的存储后端；
+- s3-store：基于s3兼容的存储服务MinIO存储后端的示例，日志采集代理为Promtail；
+- s3-store-alloy：基于s3兼容的存储服务MinIO存储后端的示例，日志采集代理为Alloy；
 
 ## Features
 
