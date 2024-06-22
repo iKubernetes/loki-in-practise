@@ -1,0 +1,120 @@
+version: "3.8"
+
+networks:
+  loki:
+
+volumes:
+  loki:
+  grafana:
+
+services:
+  # Since the Loki containers are running as user 10001 and the mounted data volume is owned by root,
+  # Loki would not have permissions to create the directories.
+  # Therefore the init container changes permissions of the mounted directory.
+  init:
+    image: &lokiImage grafana/loki:3.0.0
+    user: root
+    entrypoint:
+      - "chown"
+      - "10001:10001"
+      - "/loki"
+    volumes:
+      - ./loki:/loki
+    networks:
+      - loki
+
+  loki:
+    image: *lokiImage
+    command: "-config.file=/etc/loki/config.yaml -target=all"
+    ports:
+      - 3100:3100
+      - 7946
+      - 9095
+    volumes:
+      - ./loki-config.yaml:/etc/loki/config.yaml
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: &loki-dns
+      loki:
+        aliases:
+          - gateway
+
+  grafana:
+    #image: grafana/grafana:latest
+    image: grafana/grafana:10.2.6-ubuntu
+    environment:
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    depends_on:
+      - loki
+    entrypoint:
+      - sh
+      - -euc
+      - |
+        mkdir -p /etc/grafana/provisioning/datasources
+        cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
+        apiVersion: 1
+        datasources:
+          - name: Loki
+            type: loki
+            access: proxy
+            url: http://loki:3100
+            jsonData:
+              httpHeaderName1: "X-Scope-OrgID"
+            secureJsonData:
+              httpHeaderValue1: "tenant1"
+        EOF
+        /run.sh
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - loki
+
+  # for testing purposes only, disable in production
+  loggen-json:
+    image: &flogImage mingrammer/flog:0.4.3
+    command:
+      - --loop
+      - --format=json
+      - --number=1 # number of log lines to generate per second
+      - --delay=1000ms # delay between log lines
+      - --output=/var/log/generated-logs.txt
+      - --overwrite
+      - --type=log
+    volumes:
+      - ./loki/:/var/log/
+
+  loggen-apache-combined:
+    image: *flogImage
+    command: -f apache_combined -d 2000ms -l
+    networks:
+      - loki
+
+  loggen-apache-common:
+    image: *flogImage
+    command: -f apache_common -d 1500ms -l
+    networks:
+      - loki
+
+  alloy:
+    image: grafana/alloy-dev:latest
+    volumes:
+      - ./alloy-local-config.yaml:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./loki/:/var/log/
+    command:  run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+    ports:
+      - 12345:12345
+    depends_on:
+      - loki
+    networks:
+      - loki

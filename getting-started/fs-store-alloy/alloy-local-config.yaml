@@ -1,0 +1,73 @@
+discovery.docker "flog_scrape" {
+    host             = "unix:///var/run/docker.sock"
+    refresh_interval = "5s"
+}
+
+discovery.relabel "flog_scrape" {
+    targets = []
+
+    rule {
+	source_labels = ["__meta_docker_container_name"]
+	regex         = "/(.*loggen.*)"
+	target_label  = "container"
+    }
+}
+
+loki.source.docker "flog_scrape" {
+    host             = "unix:///var/run/docker.sock"
+    targets          = discovery.docker.flog_scrape.targets
+    // forward_to       = [loki.write.default.receiver]
+    forward_to       = [loki.process.http_access_logs_labels.receiver]
+    relabel_rules    = discovery.relabel.flog_scrape.rules
+    refresh_interval = "5s"
+}
+
+loki.process "http_access_logs_labels" {
+    stage.regex {
+        // expression = "^(?P<remote_host>\\S+) (?P<user_identifier>\\S+) (?P<user>\\S+) \\[(?P<ts>[^\\]]+)\\] \"(?P<request>[^\"]+)\" (?P<status>\\d+) (?P<_>.*)" 
+        // expression = "^(?P<_>\\S+) (?P<_>\\S+) (?P<user>\\S+) \\[(?P<_>[^\\]]+)\\] \"(?P<request>[^\"]+)\" (?P<status>\\d+) (?P<_>.*)" 
+        expression = "^(?P<_>\\S+) (?P<_>\\S+) (?P<user>\\S+) \\[(?P<_>[^\\]]+)\\] \"(?P<method>\\S+) (?P<request>\\S+) (?P<_>\\S+)\" (?P<status>\\d+) (?P<_>.*)" 
+    }
+
+    stage.labels {
+        values = {
+            http_status = "status", // Sets up a 'http_status' label, based on the 'status' extracted value.
+            http_method = "method",
+            user = "user", // Sets up a 'user' label, based on the 'user' extracted value.
+            path = "request", // Sets up a 'path' label, based on the 'request' extracted value.
+        }
+    }    
+
+    forward_to = [loki.write.default.receiver]
+}
+
+local.file_match "floglogs" {
+    path_targets = [{"__path__" = "/var/log/generated-logs.txt"}]
+}
+
+loki.source.file "local_files" {
+    targets    = local.file_match.floglogs.targets
+    forward_to = [loki.process.generated_logs_add_labels.receiver]
+}
+
+loki.process "generated_logs_add_labels" {
+    stage.json {
+      expressions = { method = "method", status = "status"} 
+    }
+
+    stage.labels {
+        values = {
+          http_method  = "method",         // Sets up an 'http_method' label, based on the 'method' extracted value.
+          http_status = "status", // Sets up a 'http_status' label, based on the 'status' extracted value.
+        }
+    }    
+
+    forward_to = [loki.write.default.receiver]
+}
+
+loki.write "default" {
+	endpoint {
+		url       = "http://loki:3100/loki/api/v1/push"
+		tenant_id = "tenant1"
+	}
+}

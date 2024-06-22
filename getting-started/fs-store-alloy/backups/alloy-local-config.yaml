@@ -1,0 +1,53 @@
+discovery.docker "flog_scrape" {
+    host             = "unix:///var/run/docker.sock"
+    refresh_interval = "5s"
+}
+
+discovery.relabel "flog_scrape" {
+    targets = []
+
+    rule {
+	source_labels = ["__meta_docker_container_name"]
+	regex         = "/(.*loggen.*)"
+	target_label  = "container"
+    }
+}
+
+loki.source.docker "flog_scrape" {
+	host             = "unix:///var/run/docker.sock"
+	targets          = discovery.docker.flog_scrape.targets
+	forward_to       = [loki.write.default.receiver]
+	relabel_rules    = discovery.relabel.flog_scrape.rules
+	refresh_interval = "5s"
+}
+
+local.file_match "floglogs" {
+    path_targets = [{"__path__" = "/var/log/*-logs.txt"}]
+}
+
+loki.source.file "local_files" {
+    targets    = local.file_match.floglogs.targets
+    forward_to = [loki.process.add_labels.receiver]
+}
+
+loki.process "add_labels" {
+    stage.json {
+      expressions = { method = "method", status = "status"} 
+    }
+
+    stage.labels {
+        values = {
+          http_method  = "method",         // Sets up an 'http_method' label, based on the 'method' extracted value.
+          http_status = "status", // Sets up a 'http_status' label, based on the 'status' extracted value.
+        }
+    }    
+
+    forward_to = [loki.write.default.receiver]
+}
+
+loki.write "default" {
+	endpoint {
+		url       = "http://loki:3100/loki/api/v1/push"
+		tenant_id = "tenant1"
+	}
+}
