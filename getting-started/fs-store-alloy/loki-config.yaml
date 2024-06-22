@@ -11,7 +11,7 @@ common:
       rules_directory: /loki/rules
   ring:
     kvstore:
-      store: inmemory
+      store: memberlist
 
 frontend:
   scheduler_address: ""
@@ -19,7 +19,7 @@ frontend:
 
 memberlist:
   join_members:
-  - loki-memberlist
+  - loki:7946
 
 query_range:
   align_queries_with_step: true
