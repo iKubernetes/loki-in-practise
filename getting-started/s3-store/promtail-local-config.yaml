@@ -36,7 +36,7 @@ scrape_configs:
         refresh_interval: 5s
         filters:
           - name: name
-            values: ['loggen-apache-combined']
+            values: ['loggen-apache-combined', 'loki']
     relabel_configs:
       - source_labels: ['__meta_docker_container_name']
         regex: '/(.*)'
