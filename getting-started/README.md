@@ -40,7 +40,7 @@ Grafana runs on port `3000`, and there are Loki datasources enabled by default.
 
 ```
 {filename="/var/log/generated-logs.txt"} 
-{container="getting-started_loggen-apache_1"} 
+{container="fs-store_loggen-apache-combined_1"} 
 ```
 
 查询满足label matcher所有过滤条件的日志行
@@ -78,7 +78,7 @@ Grafana runs on port `3000`, and there are Loki datasources enabled by default.
 pattern解析器示例：apache combined日志解析
 
 ```
-{container="getting-started_loggen-apache_1"} | pattern "<ip> - <user> <_> \"<method> <uri> <_>\" <status> <size> <_> \"<agent>\" <_>"
+{container="fs-store_loggen-apache-combined_1"} | pattern "<ip> - <user> <_> \"<method> <uri> <_>\" <status> <size> <_> \"<agent>\" <_>"
 ```
 
 
@@ -86,7 +86,7 @@ pattern解析器示例：apache combined日志解析
 示例：基于解析生成的标签过滤日志行
 
 ```
-{container="getting-started_loggen-apache_1"} | pattern "<ip> - <user> <_> \"<method> <uri> <_>\" <status> <size> <_> \"<agent>\" <_>" | login =~ ".*jenkins.*"
+{container="fs-store_loggen-apache-combined_1"} | pattern "<ip> - <user> <_> \"<method> <uri> <_>\" <status> <size> <_> \"<agent>\" <_>" | login =~ ".*jenkins.*"
 ```
 
 
@@ -94,7 +94,7 @@ pattern解析器示例：apache combined日志解析
 regexp解析器示例：apache combined日志解析
 
 ```
-{container="getting-started_loggen-apache_1"} | regexp "^(?P<remote_host>\\S+) (?P<user_identifier>\\S+) (?P<user>\\S+) \\[(?P<ts>[^\\]]+)\\] \"(?P<request>[^\"]+)\" (?P<status>\\d+) (?P<bytes_sent>\\d+) \"(?P<referer>[^\"]+)\" \"(?P<user_agent>[^\"]+)\"$"
+{container="fs-store_loggen-apache-combined_1"} | regexp "^(?P<remote_host>\\S+) (?P<user_identifier>\\S+) (?P<user>\\S+) \\[(?P<ts>[^\\]]+)\\] \"(?P<request>[^\"]+)\" (?P<status>\\d+) (?P<bytes_sent>\\d+) \"(?P<referer>[^\"]+)\" \"(?P<user_agent>[^\"]+)\"$"
 ```
 
 
@@ -102,7 +102,7 @@ regexp解析器示例：apache combined日志解析
 regexp解析器示例：apache combined或common日志解析
 
 ```
-{container="getting-started_loggen-apache_1"} | regexp "^(?P<_>\\S+) (?P<_>\\S+) (?P<user>\\S+) \\[(?P<_>[^\\]]+)\\] \"(?P<method>\\S+) (?P<request>\\S+) (?P<_>\\S+)\" (?P<status>\\d+) (?P<_>.*)"
+{container="fs-store_loggen-apache-common_1"} | regexp "^(?P<remote_host>\\S+) (?P<user_identifier>\\S+) (?P<user>\\S+) \\[(?P<ts>[^\\]]+)\\] \"(?P<request>[^\"]+)\" (?P<status>\\d+) (?P<bytes_sent>\\d+)$"
 ```
 
 
