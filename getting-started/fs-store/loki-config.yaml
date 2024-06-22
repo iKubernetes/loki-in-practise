@@ -9,23 +9,13 @@ common:
     filesystem:
       chunks_directory: /loki/chunks
       rules_directory: /loki/rules
+  ring:
+    kvstore:
+      store: inmemory
 
 frontend:
   scheduler_address: ""
   tail_proxy_url: http://loki:3100
-
-frontend_worker:
-  scheduler_address: ""
-
-index_gateway:
-  mode: simple
-
-limits_config:
-  max_cache_freshness_per_query: 10m
-  query_timeout: 300s
-  reject_old_samples: true
-  reject_old_samples_max_age: 168h
-  split_queries_by_interval: 15m
 
 memberlist:
   join_members:
@@ -33,17 +23,28 @@ memberlist:
 
 query_range:
   align_queries_with_step: true
+  results_cache:
+    cache:
+      embedded_cache:
+        enabled: true
+        max_size_mb: 100
 
 ruler:
   storage:
     type: local
 
-#runtime_config:
-#  file: /etc/loki/runtime-config/runtime-config.yaml
-
 schema_config:
   configs:
-  - from: "2024-04-01"
+  # Old boltdb-shipper schema.
+  - from: "2020-01-01"
+    index:
+      period: 24h
+      prefix: index_
+    object_store: filesystem
+    schema: v12
+    store: boltdb-shipper
+  # New TSDB schema.
+  - from: "2024-01-01"
     index:
       period: 24h
       prefix: index_
@@ -56,18 +57,26 @@ server:
   http_listen_port: 3100
   http_server_read_timeout: 600s
   http_server_write_timeout: 600s
+  log_level: debug
 
 storage_config:
+  # Old boltdb-shipper configuration.
   boltdb_shipper:
+    active_index_directory: /loki/index
+    build_per_tenant_index: true
+    cache_location: /loki/boltdb-cache
+    # only applicable if using microservices where index-gateways are independently deployed.
     index_gateway_client:
       server_address: ""
   hedging:
     at: 250ms
     max_per_second: 20
     up_to: 3
+  # New tsdb-shipper configuration.
+  # TSDB is a compact and optimized format. Loki does not currently use an index cache for TSDB.
   tsdb_shipper:
+    active_index_directory: /loki/tsdb-index
+    cache_location: /loki/tsdb-cache
+    # only applicable if using microservices where index-gateways are independently deployed.
     index_gateway_client:
       server_address: ""
-
-tracing:
-  enabled: false
