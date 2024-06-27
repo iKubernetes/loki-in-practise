@@ -1,31 +1,9 @@
-deploymentMode: SimpleScalable
+#minio:
+#  enabled: true
 
 loki:
   path_prefix: /loki
   replication_factor: 3
-
-  server:
-    http_listen_port: 3100
-    grpc_listen_port: 9095
-    http_server_read_timeout: 600s
-    http_server_write_timeout: 600s
-
-  limits_config:
-    reject_old_samples: true
-    reject_old_samples_max_age: 168h
-    max_cache_freshness_per_query: 10m
-    split_queries_by_interval: 15m
-    query_timeout: 300s
-    volume_enabled: true
-
-  commonConfig:
-    path_prefix: /loki
-    replication_factor: 3
-
-  rulerConfig: {}
-
-  index_gateway:
-    mode: simple
 
   storage:
     bucketNames:
@@ -39,27 +17,6 @@ loki:
       accessKeyId: minioadmin
       s3ForcePathStyle: true
       insecure: true
-
-  rulerConfig:
-    enable_api: true
-    enable_sharding: true
-    wal:
-      dir: /loki/ruler-wal
-    evaluation:
-      mode: remote
-      query_frontend:
-        address: dns:///loki-read:9095
-    alertmanager_url: http://alertmanager:9093
-    enable_alertmanager_v2: true
-    remote_write:
-      enabled: true
-      clients:
-        local:
-          url: http://prometheus:9090/api/v1/write
-          queue_config:
-            # send immediately as soon as a sample is generated
-            capacity: 1
-            batch_send_deadline: 0s
 
   schemaConfig:
     configs:

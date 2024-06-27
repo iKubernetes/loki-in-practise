@@ -1,9 +1,32 @@
-#minio:
-#  enabled: true
+# 
+deploymentMode: SimpleScalable
 
 loki:
   path_prefix: /loki
   replication_factor: 3
+
+  server:
+    http_listen_port: 3100
+    grpc_listen_port: 9095
+    http_server_read_timeout: 600s
+    http_server_write_timeout: 600s
+
+  limits_config:
+    reject_old_samples: true
+    reject_old_samples_max_age: 168h
+    max_cache_freshness_per_query: 10m
+    split_queries_by_interval: 15m
+    query_timeout: 300s
+    volume_enabled: true
+
+  commonConfig:
+    path_prefix: /loki
+    replication_factor: 3
+
+  rulerConfig: {}
+
+  index_gateway:
+    mode: simple
 
   storage:
     bucketNames:
@@ -17,6 +40,10 @@ loki:
       accessKeyId: minioadmin
       s3ForcePathStyle: true
       insecure: true
+    filesystem:
+      chunks_directory: /var/loki/chunks
+      rules_directory: /var/loki/rules
+      admin_api_directory: /var/loki/admin
 
   schemaConfig:
     configs:
@@ -105,21 +132,16 @@ write:
     # If empty or set to null, no storageClassName spec is
     # set, choosing the default provisioner (gp2 on AWS, standard on GKE, AWS, and OpenStack).
     storageClass: openebs-hostpath
-    # -- Selector for persistent disk
-    selector: null
   
 read:
   replicas: 3
-
   persistence:
     enableStatefulSetAutoDeletePVC: true
     size: 10Gi
     storageClass: openebs-hostpath
-    selector: null
 
 backend:
   replicas: 3
-
   persistence:
     volumeClaimsEnabled: true
     dataVolumeParameters:
@@ -127,4 +149,3 @@ backend:
     enableStatefulSetAutoDeletePVC: true
     size: 10Gi
     storageClass: openebs-hostpath
-    selector: null
