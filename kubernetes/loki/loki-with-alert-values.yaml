@@ -22,8 +22,6 @@ loki:
     path_prefix: /loki
     replication_factor: 3
 
-  rulerConfig: {}
-
   index_gateway:
     mode: simple
 
