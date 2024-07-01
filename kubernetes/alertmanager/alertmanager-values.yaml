@@ -16,11 +16,12 @@ service:
 
 ingress:
   enabled: true
-  className: "cilium"
+  #className: "cilium"
+  className: "nginx"
   annotations:
     #kubernetes.io/ingress.class: cilium
-    ingress.cilium.io/loadbalancer-mode: 'shared'
-    ingress.cilium.io/service-type: 'LoadBalancer'
+    #ingress.cilium.io/loadbalancer-mode: 'shared'
+    #ingress.cilium.io/service-type: 'LoadBalancer'
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: alertmanager.magedu.com

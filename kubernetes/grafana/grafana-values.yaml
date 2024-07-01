@@ -17,11 +17,11 @@ serviceMonitor:
 
 ingress:
   enabled: true
-  annotations:
-    ingress.cilium.io/loadbalancer-mode: 'shared'
-    ingress.cilium.io/service-type: 'LoadBalancer'
-    kubernetes.io/ingress.class: cilium
-    # kubernetes.io/tls-acme: "true"
+  ingressClassName: nginx
+  #annotations:
+  #  ingress.cilium.io/loadbalancer-mode: 'shared'
+  #  ingress.cilium.io/service-type: 'LoadBalancer'
+  #  kubernetes.io/tls-acme: "true"
   path: /
   pathType: Prefix
   hosts:
