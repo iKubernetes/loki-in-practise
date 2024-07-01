@@ -289,7 +289,7 @@ spec:
       spec:
         accessModes:
           - ReadWriteOnce
-        #storageClassName: openebs-hostpath
+        storageClassName: openebs-hostpath
         resources:
           requests:
             storage: "10Gi"
