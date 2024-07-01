@@ -1,4 +1,4 @@
-auth_enabled: true
+auth_enabled: false
 
 server:
   http_listen_address: 0.0.0.0
@@ -110,10 +110,6 @@ limits_config:
   # parallelize queries in 15min intervals
   split_queries_by_interval: 15m
   volume_enabled: true
-
-table_manager:
-  retention_deletes_enabled: true
-  retention_period: 336h
 
 query_range:
   # make queries more cache-able by aligning them with their step intervals
