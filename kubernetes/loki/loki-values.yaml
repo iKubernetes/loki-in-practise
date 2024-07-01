@@ -19,12 +19,6 @@ loki:
     query_timeout: 300s
     volume_enabled: true
 
-  commonConfig:
-    path_prefix: /loki
-    replication_factor: 3
-
-  rulerConfig: {}
-
   index_gateway:
     mode: simple
 
